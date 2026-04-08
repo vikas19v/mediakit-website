@@ -19,6 +19,9 @@
     --silver: #94a3b8;
     --green: #10b981;
     --red: #ef4444;
+    --orange: #f97316;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
     --radius: 10px;
     --radius-sm: 6px;
 }
@@ -96,22 +99,44 @@ body {
     font-weight: 500;
 }
 
-/* Country Navigation */
+/* Country & Crypto Navigation */
 .country-nav {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    padding: 16px 24px;
+    gap: 24px;
+    padding: 14px 24px;
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
 }
 
-.country-btn {
+.nav-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.nav-group-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.country-btn, .crypto-btn {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 20px;
+    padding: 9px 18px;
     border: 1px solid var(--border);
     border-radius: 50px;
     background: var(--bg-card);
@@ -119,11 +144,11 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
 }
 
-.country-btn:hover {
+.country-btn:hover, .crypto-btn:hover {
     background: var(--bg-hover);
     border-color: var(--accent);
     color: var(--text-primary);
@@ -136,8 +161,21 @@ body {
     box-shadow: 0 0 20px var(--accent-glow);
 }
 
+.crypto-btn.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+}
+
 .flag {
-    font-size: 18px;
+    font-size: 17px;
+    line-height: 1;
+}
+
+.crypto-icon {
+    font-size: 16px;
+    font-weight: 700;
     line-height: 1;
 }
 
@@ -145,14 +183,36 @@ body {
 .asset-nav {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    padding: 12px 24px;
+    gap: 20px;
+    padding: 14px 24px 10px;
     background: var(--bg-primary);
     flex-wrap: wrap;
 }
 
+.asset-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.asset-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.asset-group-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .asset-btn {
-    padding: 8px 18px;
+    padding: 7px 14px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--bg-card);
@@ -160,8 +220,9 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .asset-btn:hover {
@@ -186,9 +247,38 @@ body {
     color: var(--silver);
 }
 
+.asset-btn[data-asset="ai"].active {
+    border-color: var(--purple);
+    color: var(--purple);
+}
+
+.asset-btn[data-asset="semiconductors"].active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+.asset-btn[data-asset="space"].active {
+    border-color: #ec4899;
+    color: #ec4899;
+}
+
+.asset-btn[data-asset="photonics"].active {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+.asset-btn[data-asset="robotics"].active {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+.asset-nav.hidden {
+    display: none;
+}
+
 /* Selection Info */
 .selection-info {
-    padding: 16px 24px 8px;
+    padding: 14px 24px 6px;
     text-align: center;
 }
 
@@ -218,60 +308,91 @@ body {
     height: 100%;
 }
 
-/* Overview Section */
-.overview-section {
+/* Constituent Companies Section */
+.constituents-section {
     padding: 0 24px 24px;
+    display: none;
 }
 
-.overview-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
+.constituents-section.visible {
+    display: block;
+}
+
+.constituents-header {
+    margin-bottom: 14px;
     padding-left: 4px;
 }
 
-.overview-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
+.constituents-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-.overview-card {
+.constituents-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+.constituents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+}
+
+.constituent-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
 }
 
-.overview-card:hover {
+.constituent-card:hover {
     border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    background: var(--bg-hover);
 }
 
-.overview-card.active {
-    border-color: var(--accent);
-    box-shadow: 0 0 15px var(--accent-glow);
+.constituent-rank {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 20px;
+    text-align: center;
 }
 
-.overview-card-header {
-    padding: 10px 12px 6px;
+.constituent-info {
+    flex: 1;
+    min-width: 0;
 }
 
-.overview-label {
-    font-size: 12px;
+.constituent-name {
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.overview-chart {
-    height: 120px;
-    width: 100%;
+.constituent-ticker {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.constituent-country-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 /* Footer */
@@ -285,6 +406,9 @@ body {
 .footer p {
     font-size: 12px;
     color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.5;
 }
 
 .footer a {
@@ -300,12 +424,6 @@ body {
    Responsive Design
    ============================================ */
 
-@media (max-width: 1024px) {
-    .overview-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
 @media (max-width: 768px) {
     .header {
         padding: 12px 16px;
@@ -317,13 +435,13 @@ body {
     }
 
     .country-nav {
-        padding: 12px 16px;
-        gap: 6px;
+        padding: 10px 12px;
+        gap: 14px;
     }
 
-    .country-btn {
-        padding: 8px 14px;
-        font-size: 13px;
+    .country-btn, .crypto-btn {
+        padding: 7px 12px;
+        font-size: 12px;
     }
 
     .country-name {
@@ -331,7 +449,13 @@ body {
     }
 
     .asset-nav {
-        padding: 10px 16px;
+        padding: 10px 12px 8px;
+        gap: 12px;
+    }
+
+    .asset-btn {
+        padding: 6px 10px;
+        font-size: 11px;
     }
 
     .chart-container {
@@ -339,16 +463,16 @@ body {
         height: 400px;
     }
 
-    .overview-section {
+    .constituents-section {
         padding: 0 12px 16px;
     }
 
-    .overview-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .constituents-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
 
     .selection-info {
-        padding: 12px 16px 4px;
+        padding: 10px 16px 4px;
     }
 
     #chart-title {
@@ -357,19 +481,19 @@ body {
 }
 
 @media (max-width: 480px) {
-    .overview-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
     .chart-container {
         height: 350px;
     }
 
-    .country-btn {
-        padding: 8px 12px;
-    }
-
     .flag {
         font-size: 20px;
+    }
+
+    .constituents-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .asset-nav {
+        gap: 10px;
     }
 }

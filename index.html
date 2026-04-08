@@ -21,43 +21,81 @@
         </div>
     </header>
 
-    <!-- Country Selector -->
+    <!-- Country & Crypto Selector -->
     <nav class="country-nav">
-        <button class="country-btn active" data-country="india">
-            <span class="flag">&#127470;&#127475;</span>
-            <span class="country-name">India</span>
-        </button>
-        <button class="country-btn" data-country="usa">
-            <span class="flag">&#127482;&#127480;</span>
-            <span class="country-name">USA</span>
-        </button>
-        <button class="country-btn" data-country="uk">
-            <span class="flag">&#127468;&#127463;</span>
-            <span class="country-name">UK</span>
-        </button>
-        <button class="country-btn" data-country="china">
-            <span class="flag">&#127464;&#127475;</span>
-            <span class="country-name">China</span>
-        </button>
-        <button class="country-btn" data-country="japan">
-            <span class="flag">&#127471;&#127477;</span>
-            <span class="country-name">Japan</span>
-        </button>
+        <div class="nav-group">
+            <span class="nav-group-label">Markets</span>
+            <div class="nav-group-buttons">
+                <button class="country-btn active" data-country="india">
+                    <span class="flag">&#127470;&#127475;</span>
+                    <span class="country-name">India</span>
+                </button>
+                <button class="country-btn" data-country="usa">
+                    <span class="flag">&#127482;&#127480;</span>
+                    <span class="country-name">USA</span>
+                </button>
+                <button class="country-btn" data-country="uk">
+                    <span class="flag">&#127468;&#127463;</span>
+                    <span class="country-name">UK</span>
+                </button>
+                <button class="country-btn" data-country="china">
+                    <span class="flag">&#127464;&#127475;</span>
+                    <span class="country-name">China</span>
+                </button>
+                <button class="country-btn" data-country="japan">
+                    <span class="flag">&#127471;&#127477;</span>
+                    <span class="country-name">Japan</span>
+                </button>
+            </div>
+        </div>
+        <div class="nav-group">
+            <span class="nav-group-label">Crypto</span>
+            <div class="nav-group-buttons">
+                <button class="crypto-btn" data-crypto="bitcoin">
+                    <span class="crypto-icon">&#8383;</span>
+                    <span>Bitcoin</span>
+                </button>
+                <button class="crypto-btn" data-crypto="ethereum">
+                    <span class="crypto-icon">&Xi;</span>
+                    <span>Ethereum</span>
+                </button>
+            </div>
+        </div>
     </nav>
 
     <!-- Asset Selector -->
     <nav class="asset-nav">
-        <button class="asset-btn active" data-asset="gold">Gold</button>
-        <button class="asset-btn" data-asset="silver">Silver</button>
-        <button class="asset-btn" data-asset="largecap">Large Cap</button>
-        <button class="asset-btn" data-asset="midcap">Mid Cap</button>
-        <button class="asset-btn" data-asset="smallcap">Small Cap</button>
+        <div class="asset-group">
+            <span class="asset-group-label">Commodities</span>
+            <div class="asset-group-buttons">
+                <button class="asset-btn active" data-asset="gold">Gold</button>
+                <button class="asset-btn" data-asset="silver">Silver</button>
+            </div>
+        </div>
+        <div class="asset-group">
+            <span class="asset-group-label">Indices</span>
+            <div class="asset-group-buttons">
+                <button class="asset-btn" data-asset="largecap" id="btn-largecap">Large Cap</button>
+                <button class="asset-btn" data-asset="midcap" id="btn-midcap">Mid Cap</button>
+                <button class="asset-btn" data-asset="smallcap" id="btn-smallcap">Small Cap</button>
+            </div>
+        </div>
+        <div class="asset-group">
+            <span class="asset-group-label">Sectors</span>
+            <div class="asset-group-buttons">
+                <button class="asset-btn" data-asset="ai">AI</button>
+                <button class="asset-btn" data-asset="semiconductors">Semiconductors</button>
+                <button class="asset-btn" data-asset="space">Space Tech</button>
+                <button class="asset-btn" data-asset="photonics">Photonics</button>
+                <button class="asset-btn" data-asset="robotics">Robotics</button>
+            </div>
+        </div>
     </nav>
 
     <!-- Current Selection Info -->
     <div class="selection-info">
         <h2 id="chart-title">Gold - India</h2>
-        <p id="chart-description">MCX Gold Futures</p>
+        <p id="chart-description">International gold price in US dollars per troy ounce</p>
     </div>
 
     <!-- Main Chart -->
@@ -65,46 +103,20 @@
         <div id="tradingview-chart"></div>
     </div>
 
-    <!-- Overview Grid - Shows all 5 assets for the selected country -->
-    <div class="overview-section">
-        <h3 class="overview-title">Quick Overview - <span id="overview-country">India</span></h3>
-        <div class="overview-grid">
-            <div class="overview-card" data-asset="gold">
-                <div class="overview-card-header">
-                    <span class="overview-label">Gold</span>
-                </div>
-                <div class="overview-chart" id="overview-gold"></div>
-            </div>
-            <div class="overview-card" data-asset="silver">
-                <div class="overview-card-header">
-                    <span class="overview-label">Silver</span>
-                </div>
-                <div class="overview-chart" id="overview-silver"></div>
-            </div>
-            <div class="overview-card" data-asset="largecap">
-                <div class="overview-card-header">
-                    <span class="overview-label">Large Cap</span>
-                </div>
-                <div class="overview-chart" id="overview-largecap"></div>
-            </div>
-            <div class="overview-card" data-asset="midcap">
-                <div class="overview-card-header">
-                    <span class="overview-label">Mid Cap</span>
-                </div>
-                <div class="overview-chart" id="overview-midcap"></div>
-            </div>
-            <div class="overview-card" data-asset="smallcap">
-                <div class="overview-card-header">
-                    <span class="overview-label">Small Cap</span>
-                </div>
-                <div class="overview-chart" id="overview-smallcap"></div>
-            </div>
+    <!-- Constituent Companies Section -->
+    <div class="constituents-section" id="constituents-section">
+        <div class="constituents-header">
+            <h3 id="constituents-title">Constituent Companies</h3>
+            <p id="constituents-subtitle" class="constituents-subtitle"></p>
+        </div>
+        <div class="constituents-grid" id="constituents-grid">
+            <!-- Populated by JavaScript -->
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Data provided by <a href="https://www.tradingview.com" target="_blank" rel="noopener">TradingView</a>. Charts are interactive - use scroll to zoom, drag to pan.</p>
+        <p>Data provided by <a href="https://www.tradingview.com" target="_blank" rel="noopener">TradingView</a>. Charts are interactive &mdash; scroll to zoom, drag to pan. Constituent lists are indicative and may not reflect real-time index composition.</p>
     </footer>
 
     <!-- TradingView Library -->
