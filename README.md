@@ -1,6 +1,6 @@
 # MediaKit - Global Market Dashboard
 
-A free, interactive financial dashboard that displays live and historical charts for **Gold, Silver, Large Cap, Mid Cap, and Small Cap** indices across **India, USA, UK, China, and Japan**.
+A free, interactive financial dashboard that displays live and historical charts for **Gold, Silver, Large Cap, Mid Cap, Small Cap** indices and **sector-specific** indices (AI, Semiconductors, Space, Photonics, Robotics) across **India, USA, UK, China, and Japan** — plus **Bitcoin** and **Ethereum** crypto charts.
 
 **Live Website:** [https://vikas19v.github.io/mediakit-website/](https://vikas19v.github.io/mediakit-website/)
 
@@ -10,23 +10,55 @@ A free, interactive financial dashboard that displays live and historical charts
 
 MediaKit is like a personal Bloomberg terminal — but free and in your browser. It lets you:
 
-- View **live price charts** for major market indices and commodities
+- View **live price charts** for major market indices, commodities, sectors and crypto
 - See **full historical data** — zoom into any day, week, month, or year
 - **Compare markets** across 5 countries at a glance
-- Use **professional tools** like candlestick charts, moving averages, and drawing tools
+- View **constituent company lists** for each index and sector
+- Track **Bitcoin and Ethereum** prices alongside traditional markets
+- Explore **sector-specific** indices: AI, Semiconductors, Space Tech, Photonics, Robotics
 - Works on **desktop, tablet, and mobile**
 
 ---
 
 ## Markets & Indices Covered
 
+### Commodities & Main Indices
+
 | Country | Large Cap | Mid Cap | Small Cap | Gold | Silver |
 |---------|-----------|---------|-----------|------|--------|
-| 🇮🇳 India | Nifty 50 | Nifty Midcap 100 | Nifty Smallcap 100 | MCX Gold | MCX Silver |
-| 🇺🇸 USA | S&P 500 | S&P MidCap 400 | Russell 2000 | COMEX Gold | COMEX Silver |
-| 🇬🇧 UK | FTSE 100 | FTSE 250 | FTSE AIM All-Share | Gold (USD) | Silver (USD) |
-| 🇨🇳 China | CSI 300 | CSI 500 | CSI 1000 | Gold (USD) | Silver (USD) |
-| 🇯🇵 Japan | Nikkei 225 | TOPIX Mid 400 | TOPIX Small | Gold (USD) | Silver (USD) |
+| India | INDA ETF (Nifty/Sensex proxy) | SMIN ETF (MidCap proxy) | INDY ETF (SmallCap proxy) | Gold (USD) | Silver (USD) |
+| USA | SPY (S&P 500) | MDY (S&P MidCap 400) | IWM (Russell 2000) | Gold (USD) | Silver (USD) |
+| UK | FTSE 100 (TVC:UKX) | EWU ETF (FTSE 250 proxy) | EWUS ETF (SmallCap proxy) | Gold (USD) | Silver (USD) |
+| China | FXI ETF (CSI 300 proxy) | MCHI ETF (CSI 500 proxy) | CNYA ETF (CSI 1000 proxy) | Gold (USD) | Silver (USD) |
+| Japan | Nikkei 225 (TVC:NI225) | EWJ ETF (MidCap proxy) | SCJ ETF (SmallCap proxy) | Gold (USD) | Silver (USD) |
+
+### Sector Indices (where available)
+
+| Sector | USA | India | Japan |
+|--------|-----|-------|-------|
+| AI | AIQ (Global X AI ETF) | INDA (via IT stocks) | AIQ (Global) |
+| Semiconductors | SMH (VanEck Semi ETF) | INDA (via IT stocks) | — |
+| Space Tech | UFO (Procure Space ETF) | — | — |
+| Photonics | LITE (Lumentum Holdings) | — | — |
+| Robotics | ROBT (First Trust Robotics) | — | ROBT (Global) |
+
+### Crypto
+
+| Asset | Symbol |
+|-------|--------|
+| Bitcoin | BITSTAMP:BTCUSD |
+| Ethereum | BITSTAMP:ETHUSD |
+
+### Why ETFs Instead of Direct Indices?
+
+TradingView's embedded widgets only support symbols from [specific exchanges](https://www.tradingview.com/widget-docs/markets/). Many local exchanges are blocked:
+
+- **NSE (India)** — blocked by NSE data sharing policy
+- **TSE (Japan)** — not listed for widget embedding
+- **LSE (UK)** — not listed for widget embedding
+- **SSE/SZSE (China)** — only end-of-day data, unreliable for embeds
+
+So we use **US-listed ETFs** (which trade on NYSE Arca/NASDAQ — fully supported) that track those markets. The price movements closely mirror the local indices.
 
 ### What Do These Mean?
 
@@ -34,6 +66,7 @@ MediaKit is like a personal Bloomberg terminal — but free and in your browser.
 - **Mid Cap** = Medium-sized companies — more growth potential, more risk
 - **Small Cap** = Smaller companies — highest growth potential, highest risk
 - **Gold / Silver** = Precious metal commodity prices — often used as a "safe haven" during market downturns
+- **ETF** = Exchange-Traded Fund — a basket of stocks that tracks an index, traded like a single stock
 
 ---
 
@@ -41,11 +74,12 @@ MediaKit is like a personal Bloomberg terminal — but free and in your browser.
 
 Think of it like a TV with channels:
 
-1. **You pick a country** (like picking a TV channel — India, USA, UK, etc.)
-2. **You pick what to watch** (Gold, Silver, Large Cap, Mid Cap, or Small Cap)
+1. **You pick a country** (India, USA, UK, etc.) or **crypto** (Bitcoin, Ethereum)
+2. **You pick what to watch** (Gold, Silver, Large Cap, AI, Semiconductors, etc.)
 3. **The chart loads automatically** with live data and full history
+4. **Scroll down** to see the list of companies that make up that index
 
-The charts come from **TradingView**, a trusted platform used by millions of traders worldwide. We don't store any data ourselves — the charts pull live data directly from stock exchanges and commodity markets.
+The charts come from **TradingView**, a trusted platform used by millions of traders worldwide. We don't store any data ourselves.
 
 ---
 
@@ -54,55 +88,37 @@ The charts come from **TradingView**, a trusted platform used by millions of tra
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│              User's Browser                 │
-│                                             │
-│  index.html ─── style.css ─── app.js        │
-│       │                          │          │
-│       │    ┌─────────────────────┤          │
-│       ▼    ▼                     ▼          │
-│  ┌──────────────┐    ┌───────────────────┐  │
-│  │  Page Layout  │    │  Symbol Mapping   │  │
-│  │  (HTML/CSS)   │    │  (JS Object)      │  │
-│  └──────┬───────┘    └────────┬──────────┘  │
-│         │                     │             │
-│         ▼                     ▼             │
-│  ┌──────────────────────────────────────┐   │
-│  │     TradingView Widget (Embedded)     │   │
-│  │  - Loads chart for selected symbol    │   │
-│  │  - Fetches data from TradingView CDN  │   │
-│  │  - Renders interactive chart          │   │
-│  └──────────────────────────────────────┘   │
-└─────────────────────────────────────────────┘
-                    │
-                    ▼
-        ┌───────────────────┐
-        │  TradingView CDN   │
-        │  (External Server)  │
-        │  - Chart library    │
-        │  - Market data      │
-        │  - Historical data  │
-        └───────────────────┘
+User's Browser
+├── index.html ──── Page structure (header, buttons, chart, constituents)
+├── style.css ───── Dark theme, responsive grid, animations
+└── app.js ──────── Brain: symbol mapping + chart loading + constituent rendering
+        │
+        ▼
+  embed-widget-advanced-chart.js (TradingView CDN)
+        │
+        ▼
+  TradingView Servers → Live market data via iframe
 ```
 
 ### Tech Stack
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| Structure | HTML5 | Page layout — header, buttons, chart containers |
-| Styling | CSS3 | Dark theme, responsive grid, animations |
-| Logic | Vanilla JavaScript | Handles button clicks, swaps chart symbols |
-| Charts | TradingView Widgets (free) | Renders interactive charts with live data |
-| Hosting | GitHub Pages (free) | Serves the website to the internet |
-| Fonts | Google Fonts (Inter) | Clean, modern typography |
+| Structure | HTML5 | Page layout |
+| Styling | CSS3 | Dark theme, responsive |
+| Logic | Vanilla JavaScript | Button clicks, chart swaps, constituent lists |
+| Charts | TradingView embed-widget-advanced-chart.js | Interactive charts with live data |
+| Hosting | GitHub Pages (free) | Serves the website |
+| CI/CD | GitHub Actions | Auto-deploys on push |
 
 ### Key Design Decisions
 
-- **No backend / server** — everything runs in the browser, so there's nothing to maintain or pay for
-- **No database** — chart data comes directly from TradingView's servers
-- **No API keys** — TradingView widgets are free and don't require authentication
-- **No build step** — plain HTML/CSS/JS, no npm, no webpack, no frameworks
-- **No dependencies** — only external resources are TradingView's widget script and Google Fonts
+- **No backend** — everything runs in the browser
+- **No database** — chart data comes from TradingView
+- **No API keys** — TradingView widgets are free
+- **No build step** — plain HTML/CSS/JS
+- **embed-widget-advanced-chart.js** instead of the older tv.js — wider symbol support
+- **US-listed ETFs as proxies** for markets where direct symbols are blocked
 
 ---
 
@@ -110,103 +126,60 @@ The charts come from **TradingView**, a trusted platform used by millions of tra
 
 ```
 mediakit-website/
-├── index.html          # Main page — layout and structure
-├── style.css           # All styling — dark theme, responsive design
-├── app.js              # Application logic — symbol mapping and chart loading
+├── index.html          # Main page layout
+├── style.css           # Dark financial theme
+├── app.js              # Symbol mapping, chart loading, constituents, error handling
 ├── README.md           # This file
 └── .github/
     └── workflows/
-        └── deploy.yml  # Auto-deploys to GitHub Pages on every push
+        └── deploy.yml  # Auto-deploys to GitHub Pages
 ```
 
-### What Each File Does
+---
 
-#### `index.html`
-- Defines the page structure: header, country buttons, asset buttons, chart container, overview grid
-- Loads the TradingView chart library from their CDN (content delivery network)
-- Links to the CSS for styling and JS for interactivity
+## Error Handling
 
-#### `style.css`
-- Dark financial theme (similar to Bloomberg or TradingView's own dark mode)
-- CSS Grid for the overview cards layout
-- Flexbox for navigation alignment
-- CSS custom properties (variables) for consistent colors
-- Media queries for responsive design (adapts to phone/tablet/desktop)
-- Animations (pulsing green "Live" dot, hover effects)
+The app handles several error scenarios:
 
-#### `app.js`
-- **MARKET_DATA object** — A lookup table mapping each country + asset to a TradingView symbol code (e.g., India + Large Cap = `NSE:NIFTY`)
-- **Event listeners** — Detects when you click a country or asset button
-- **loadMainChart()** — Destroys the old chart widget and creates a new one with the selected symbol
-- **loadOverviewCharts()** — Loads 5 mini charts at the bottom showing all assets for the selected country
-
-#### `.github/workflows/deploy.yml`
-- GitHub Actions workflow that automatically deploys the site whenever you push changes
-- Uses GitHub's official Pages deployment actions
-- No configuration needed — it just works
+| Scenario | What Happens |
+|----------|-------------|
+| Symbol not available in embed | Shows a friendly error message with an icon |
+| Chart fails to load (network) | Script error handler shows connection error message |
+| Iframe doesn't appear within 12s | Timeout shows "Chart unavailable" message |
+| Sector not available for country | Button is hidden entirely |
+| Asset unavailable after country switch | Auto-falls back to Gold |
 
 ---
 
 ## How to Make Changes
 
-### If You Want to Edit the Website
+### Edit on GitHub (easiest)
 
-1. Go to your repo: https://github.com/vikas19v/mediakit-website
-2. Click on any file (e.g., `index.html`)
-3. Click the pencil icon (Edit) in the top right
-4. Make your changes
-5. Click "Commit changes" at the bottom
-6. The website will automatically update in 1-2 minutes
+1. Go to https://github.com/vikas19v/mediakit-website
+2. Click any file → pencil icon → edit → commit
+3. Website auto-updates in 1-2 minutes
 
-### If You Want to Add a New Country
+### Add a New Country
 
-Open `app.js` and add a new entry to the `MARKET_DATA` object following the same pattern:
-
-```javascript
-newcountry: {
-    name: "Country Name",
-    timezone: "Continent/City",
-    gold:     { symbol: "EXCHANGE:SYMBOL", name: "Display Name", description: "..." },
-    silver:   { symbol: "EXCHANGE:SYMBOL", name: "Display Name", description: "..." },
-    largecap: { symbol: "EXCHANGE:SYMBOL", name: "Display Name", description: "..." },
-    midcap:   { symbol: "EXCHANGE:SYMBOL", name: "Display Name", description: "..." },
-    smallcap: { symbol: "EXCHANGE:SYMBOL", name: "Display Name", description: "..." }
-}
-```
-
-Then add a matching button in `index.html` inside the `country-nav` section.
+1. Add entry to `MARKET_DATA` in `app.js` with TradingView-compatible symbols
+2. Add a button in `index.html` inside `.country-nav`
+3. Add constituent companies to `CONSTITUENTS` in `app.js`
 
 ### Finding TradingView Symbols
 
-1. Go to [TradingView.com](https://www.tradingview.com)
-2. Use the search bar to find any stock, index, or commodity
-3. The symbol appears in the URL (e.g., `NSE:NIFTY`, `SP:SPX`)
-
----
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| Charts not loading | Refresh the page. TradingView widgets need a stable internet connection |
-| "Chart loading..." message stuck | Your browser might be blocking third-party scripts. Disable ad-blockers for the site |
-| Charts show "Invalid symbol" | The TradingView symbol may have changed. Search for the correct one on TradingView.com |
-| Website not updating after changes | GitHub Pages can take 1-5 minutes to deploy. Check the Actions tab for build status |
-| 404 error on the website | Make sure GitHub Pages is enabled in Settings → Pages → Source: master branch |
+1. Check [TradingView Widget Markets](https://www.tradingview.com/widget-docs/markets/) for supported exchanges
+2. Use `TVC:*` symbols for major indices (always work in embeds)
+3. Use US-listed ETFs (`AMEX:*`) as proxies for blocked markets
+4. Test on [TradingView](https://www.tradingview.com) to verify the symbol exists
 
 ---
 
 ## Cost
 
-**$0.** Everything used in this project is completely free:
-- GitHub repository: free
-- GitHub Pages hosting: free
-- TradingView chart widgets: free
-- Google Fonts: free
-- No backend servers, no databases, no API subscriptions
+**$0.** Everything is free: GitHub repo, GitHub Pages hosting, TradingView widgets, Google Fonts.
 
 ---
 
 ## License
 
-This project is open source and free to use for personal purposes. TradingView widgets are subject to [TradingView's terms of use](https://www.tradingview.com/policies/).
+Open source for personal use. TradingView widgets are subject to [TradingView's terms](https://www.tradingview.com/policies/).
