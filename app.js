@@ -1,23 +1,41 @@
 /* ============================================
    MediaKit - Global Market Dashboard
    Main Application Logic
-   ============================================ */
+   ============================================
 
-// ---- Symbol Mapping ----
-// All symbols use TradingView embed-compatible tickers only.
-// Symbols like SP:SPX don't work in embedded widgets — use alternatives.
+   SYMBOL STRATEGY (why we chose these):
+   ──────────────────────────────────────
+   TradingView embeds only support symbols from exchanges listed at:
+   https://www.tradingview.com/widget-docs/markets/
+
+   Exchanges that DO NOT work in embeds:
+     - NSE (India) — blocked by NSE data policy
+     - TSE (Japan) — not listed for widgets
+     - LSE (UK)   — not listed for widgets
+     - SSE/SZSE (China) — EOD only, unreliable
+
+   What DOES work:
+     - TVC:*        — TradingView's own calculated indices (GOLD, SILVER, NI225, UKX, SPX, DJI)
+     - US ETFs      — AMEX/NYSE Arca listed ETFs (SPY, INDA, EWJ, EWU, FXI, GLD, SLV, etc.)
+     - FOREXCOM:*   — Forex/CFD broker feeds (SPXUSD, etc.)
+     - BITSTAMP:*   — Crypto exchanges
+     - COINBASE:*   — Crypto exchanges
+
+   For countries where direct index symbols are blocked, we use
+   US-listed ETFs that track those markets as proxies.
+   ============================================ */
 
 const MARKET_DATA = {
     india: {
         name: "India",
         timezone: "Asia/Kolkata",
-        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",              description: "International gold price in US dollars per troy ounce" },
-        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",            description: "International silver price in US dollars per troy ounce" },
-        largecap: { symbol: "NSE:NIFTY",            name: "Nifty 50",                  description: "Top 50 companies by market cap on NSE",                  btnLabel: "Nifty 50" },
-        midcap:   { symbol: "NSE:CNXMIDCAP",        name: "Nifty Midcap 100",          description: "Mid-sized companies ranked 101-200 on NSE",              btnLabel: "Nifty Midcap 100" },
-        smallcap: { symbol: "NSE:CNXSMALLCAP",      name: "Nifty Smallcap 100",        description: "Small companies ranked 201-300 on NSE",                  btnLabel: "Nifty Smallcap 100" },
-        ai:           { symbol: "NSE:NIFTYIT",      name: "Nifty IT",                  description: "Nifty IT index — closest proxy for AI/tech in India" },
-        semiconductors:{ symbol: "NSE:NIFTYIT",     name: "Nifty IT",                  description: "Nifty IT index — India has no dedicated semiconductor index" },
+        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",                description: "International gold price in US dollars per troy ounce" },
+        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",              description: "International silver price in US dollars per troy ounce" },
+        largecap: { symbol: "AMEX:INDA",            name: "iShares MSCI India ETF",       description: "US-listed ETF tracking India's largest companies (Nifty/Sensex proxy)", btnLabel: "Nifty 50 (INDA)" },
+        midcap:   { symbol: "AMEX:SMIN",            name: "iShares MSCI India Small-Cap", description: "US-listed ETF tracking India's mid & small cap stocks",                 btnLabel: "India MidCap (SMIN)" },
+        smallcap: { symbol: "AMEX:INDY",            name: "iShares India 50 ETF",         description: "US-listed ETF — Nifty 50 tracker (closest small cap proxy)",            btnLabel: "India SmCap (INDY)" },
+        ai:           { symbol: "AMEX:INDA",        name: "India Tech (via INDA)",        description: "India large-cap ETF — includes major IT/AI companies like TCS, Infosys" },
+        semiconductors:{ symbol: "AMEX:INDA",       name: "India Tech (via INDA)",        description: "India large-cap ETF — India lacks a dedicated semiconductor index" },
         space:        null,
         photonics:    null,
         robotics:     null
@@ -25,25 +43,25 @@ const MARKET_DATA = {
     usa: {
         name: "USA",
         timezone: "America/New_York",
-        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",              description: "International gold price in US dollars per troy ounce" },
-        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",            description: "International silver price in US dollars per troy ounce" },
-        largecap: { symbol: "FOREXCOM:SPXUSD",      name: "S&P 500",                   description: "500 largest US companies — the main US market benchmark", btnLabel: "S&P 500" },
-        midcap:   { symbol: "AMEX:MDY",             name: "S&P MidCap 400 ETF",        description: "ETF tracking 400 mid-sized US companies",                btnLabel: "S&P MidCap 400" },
-        smallcap: { symbol: "AMEX:IWM",             name: "Russell 2000 ETF",           description: "ETF tracking 2000 smallest US public companies",         btnLabel: "Russell 2000" },
-        ai:           { symbol: "NASDAQ:BOTZ",      name: "Global X AI & Tech ETF",    description: "ETF tracking companies in AI and robotics" },
-        semiconductors:{ symbol: "NASDAQ:SOXX",     name: "iShares Semiconductor ETF", description: "ETF tracking the largest US semiconductor companies" },
-        space:        { symbol: "AMEX:UFO",         name: "Procure Space ETF",         description: "ETF tracking companies in the space industry" },
-        photonics:    { symbol: "NASDAQ:LITE",      name: "Lumentum Holdings",         description: "Leading photonics company — no dedicated photonics ETF exists" },
-        robotics:     { symbol: "AMEX:ROBT",        name: "First Trust Robotics ETF",  description: "ETF tracking robotics and automation companies" }
+        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",                description: "International gold price in US dollars per troy ounce" },
+        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",              description: "International silver price in US dollars per troy ounce" },
+        largecap: { symbol: "AMEX:SPY",             name: "S&P 500 ETF (SPY)",            description: "SPDR ETF tracking the 500 largest US companies",                       btnLabel: "S&P 500" },
+        midcap:   { symbol: "AMEX:MDY",             name: "S&P MidCap 400 ETF",           description: "SPDR ETF tracking 400 mid-sized US companies",                         btnLabel: "S&P MidCap 400" },
+        smallcap: { symbol: "AMEX:IWM",             name: "Russell 2000 ETF",             description: "iShares ETF tracking 2000 smallest US public companies",                btnLabel: "Russell 2000" },
+        ai:           { symbol: "AMEX:AIQ",         name: "Global X AI & Big Data ETF",   description: "ETF tracking companies in artificial intelligence and big data" },
+        semiconductors:{ symbol: "AMEX:SMH",        name: "VanEck Semiconductor ETF",     description: "ETF tracking the 25 largest US semiconductor companies" },
+        space:        { symbol: "AMEX:UFO",         name: "Procure Space ETF",            description: "ETF tracking companies in the space industry" },
+        photonics:    { symbol: "NASDAQ:LITE",      name: "Lumentum Holdings",            description: "Leading photonics company — no dedicated photonics ETF exists" },
+        robotics:     { symbol: "AMEX:ROBT",        name: "First Trust Robotics ETF",     description: "ETF tracking robotics, AI and automation companies" }
     },
     uk: {
         name: "UK",
         timezone: "Europe/London",
-        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",              description: "International gold price in US dollars per troy ounce" },
-        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",            description: "International silver price in US dollars per troy ounce" },
-        largecap: { symbol: "TVC:UKX",              name: "FTSE 100",                  description: "100 largest companies on the London Stock Exchange",      btnLabel: "FTSE 100" },
-        midcap:   { symbol: "TVC:MCX",              name: "FTSE 250",                  description: "Next 250 companies after FTSE 100 by market cap",         btnLabel: "FTSE 250" },
-        smallcap: { symbol: "LSE:ISP",              name: "FTSE SmallCap ETF",         description: "iShares UK Small Cap ETF on London Stock Exchange",        btnLabel: "FTSE SmallCap" },
+        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",                description: "International gold price in US dollars per troy ounce" },
+        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",              description: "International silver price in US dollars per troy ounce" },
+        largecap: { symbol: "TVC:UKX",              name: "FTSE 100",                     description: "Index of 100 largest companies on the London Stock Exchange",           btnLabel: "FTSE 100" },
+        midcap:   { symbol: "AMEX:EWU",             name: "iShares MSCI UK ETF",          description: "US-listed ETF tracking the broad UK equity market (FTSE 250 proxy)",    btnLabel: "FTSE 250 (EWU)" },
+        smallcap: { symbol: "AMEX:EWUS",            name: "iShares MSCI UK Small-Cap",    description: "US-listed ETF tracking UK small-cap stocks",                            btnLabel: "UK SmallCap (EWUS)" },
         ai:           null,
         semiconductors:null,
         space:        null,
@@ -53,11 +71,11 @@ const MARKET_DATA = {
     china: {
         name: "China",
         timezone: "Asia/Shanghai",
-        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",              description: "International gold price in US dollars per troy ounce" },
-        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",            description: "International silver price in US dollars per troy ounce" },
-        largecap: { symbol: "SSE:000300",            name: "CSI 300",                   description: "300 largest A-share stocks on Shanghai & Shenzhen",       btnLabel: "CSI 300" },
-        midcap:   { symbol: "SSE:000905",            name: "CSI 500",                   description: "500 mid-sized stocks after CSI 300",                     btnLabel: "CSI 500" },
-        smallcap: { symbol: "SSE:000852",            name: "CSI 1000",                  description: "1000 small-cap stocks beyond CSI 300 & 500",             btnLabel: "CSI 1000" },
+        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",                description: "International gold price in US dollars per troy ounce" },
+        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",              description: "International silver price in US dollars per troy ounce" },
+        largecap: { symbol: "AMEX:FXI",             name: "iShares China Large-Cap ETF",  description: "US-listed ETF tracking 50 largest Chinese companies (CSI 300 proxy)",   btnLabel: "CSI 300 (FXI)" },
+        midcap:   { symbol: "AMEX:MCHI",            name: "iShares MSCI China ETF",       description: "US-listed ETF tracking mid & large Chinese stocks (CSI 500 proxy)",     btnLabel: "CSI 500 (MCHI)" },
+        smallcap: { symbol: "AMEX:CNYA",            name: "iShares MSCI China A ETF",     description: "US-listed ETF tracking China A-shares (CSI 1000 proxy)",                btnLabel: "CSI 1000 (CNYA)" },
         ai:           null,
         semiconductors:null,
         space:        null,
@@ -67,23 +85,23 @@ const MARKET_DATA = {
     japan: {
         name: "Japan",
         timezone: "Asia/Tokyo",
-        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",              description: "International gold price in US dollars per troy ounce" },
-        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",            description: "International silver price in US dollars per troy ounce" },
-        largecap: { symbol: "TVC:NI225",             name: "Nikkei 225",                description: "225 largest companies on the Tokyo Stock Exchange",       btnLabel: "Nikkei 225" },
-        midcap:   { symbol: "TSE:2632",              name: "MAXIS TOPIX Mid400 ETF",   description: "ETF tracking mid-cap Japanese stocks",                    btnLabel: "TOPIX Mid 400" },
-        smallcap: { symbol: "TSE:1318",              name: "TOPIX Small ETF",           description: "ETF tracking small-cap Japanese stocks",                  btnLabel: "TOPIX Small" },
-        ai:           { symbol: "TSE:2631",          name: "MAXIS Nikkei AI ETF",      description: "Japanese AI-related companies ETF" },
+        gold:     { symbol: "TVC:GOLD",            name: "Gold (USD/oz)",                description: "International gold price in US dollars per troy ounce" },
+        silver:   { symbol: "TVC:SILVER",           name: "Silver (USD/oz)",              description: "International silver price in US dollars per troy ounce" },
+        largecap: { symbol: "TVC:NI225",             name: "Nikkei 225",                  description: "Index of 225 largest companies on the Tokyo Stock Exchange",            btnLabel: "Nikkei 225" },
+        midcap:   { symbol: "AMEX:EWJ",              name: "iShares MSCI Japan ETF",      description: "US-listed ETF tracking broad Japanese equity market",                   btnLabel: "Japan Mid (EWJ)" },
+        smallcap: { symbol: "AMEX:SCJ",              name: "iShares MSCI Japan SC ETF",   description: "US-listed ETF tracking Japanese small-cap stocks",                      btnLabel: "Japan SmCap (SCJ)" },
+        ai:           { symbol: "AMEX:AIQ",          name: "Global X AI ETF (Global)",    description: "Global AI ETF — includes major Japanese tech/AI companies" },
         semiconductors:null,
         space:        null,
         photonics:    null,
-        robotics:     { symbol: "TSE:2522",          name: "iShares Robotics ETF JP",  description: "Japanese robotics and automation ETF" }
+        robotics:     { symbol: "AMEX:ROBT",         name: "Robotics ETF (Global)",       description: "Global robotics ETF — includes Japanese robotics leaders like Fanuc, Keyence" }
     }
 };
 
 // Crypto data — separate from country markets
 const CRYPTO_DATA = {
-    bitcoin:  { symbol: "BITSTAMP:BTCUSD", name: "Bitcoin",  description: "BTC/USD — The original cryptocurrency" },
-    ethereum: { symbol: "BITSTAMP:ETHUSD", name: "Ethereum", description: "ETH/USD — Smart contract platform cryptocurrency" }
+    bitcoin:  { symbol: "BITSTAMP:BTCUSD", name: "Bitcoin (BTC/USD)",  description: "BTC/USD — The original cryptocurrency, traded on Bitstamp" },
+    ethereum: { symbol: "BITSTAMP:ETHUSD", name: "Ethereum (ETH/USD)", description: "ETH/USD — Smart contract platform cryptocurrency, traded on Bitstamp" }
 };
 
 
@@ -268,26 +286,23 @@ const CONSTITUENTS = {
         ],
         photonics: [
             { name: "Lumentum Holdings", ticker: "LITE" },
-            { name: "II-VI / Coherent", ticker: "COHR" },
+            { name: "Coherent Corp (II-VI)", ticker: "COHR" },
             { name: "IPG Photonics", ticker: "IPGP" },
             { name: "Viavi Solutions", ticker: "VIAV" },
-            { name: "Hamamatsu Photonics (US ADR)", ticker: "HMPCY" },
             { name: "MKS Instruments", ticker: "MKSI" },
-            { name: "Photon Control (Acq.)", ticker: "—" },
             { name: "Onto Innovation", ticker: "ONTO" },
-            { name: "Ushio (US ADR)", ticker: "USHOY" },
-            { name: "EMCORE", ticker: "EMKR" }
+            { name: "EMCORE", ticker: "EMKR" },
+            { name: "Photon Control (Acquired)", ticker: "—" }
         ],
         robotics: [
             { name: "Intuitive Surgical", ticker: "ISRG" },
             { name: "Rockwell Automation", ticker: "ROK" },
             { name: "Cognex Corporation", ticker: "CGNX" },
-            { name: "Brooks Automation", ticker: "AZTA" },
+            { name: "Azenta (Brooks Automation)", ticker: "AZTA" },
             { name: "Teradyne (Universal Robots)", ticker: "TER" },
             { name: "iRobot", ticker: "IRBT" },
             { name: "Symbotic", ticker: "SYM" },
             { name: "Kratos Defense (drones)", ticker: "KTOS" },
-            { name: "Sarcos Technology", ticker: "STRC" },
             { name: "UiPath (RPA)", ticker: "PATH" },
             { name: "ABB Ltd (US listed)", ticker: "ABB" },
             { name: "Fanuc (US ADR)", ticker: "FANUY" }
@@ -368,7 +383,6 @@ const CONSTITUENTS = {
             { name: "Naura Technology", ticker: "002371" },
             { name: "Maxscend Microelectronics", ticker: "300782" },
             { name: "Shanghai Junshi Bio", ticker: "688180" },
-            { name: "Kingsoft Cloud", ticker: "688111" },
             { name: "Cambricon Technologies", ticker: "688256" },
             { name: "Hygon Information Tech", ticker: "688041" },
             { name: "Zhejiang Supcon Tech", ticker: "688777" },
@@ -419,13 +433,12 @@ const CONSTITUENTS = {
             { name: "SoftBank Group", ticker: "9984" },
             { name: "NEC Corporation", ticker: "6701" },
             { name: "Fujitsu", ticker: "6702" },
-            { name: "Preferred Networks (Private)", ticker: "—" },
             { name: "NTT Data", ticker: "9613" },
             { name: "Hitachi (AI division)", ticker: "6501" },
             { name: "CyberAgent", ticker: "4751" },
-            { name: "Brain Corporation (JP)", ticker: "—" },
             { name: "PKSHA Technology", ticker: "3993" },
-            { name: "Appier Group", ticker: "4180" }
+            { name: "Appier Group", ticker: "4180" },
+            { name: "Preferred Networks", ticker: "Private" }
         ],
         robotics: [
             { name: "Fanuc", ticker: "6954" },
@@ -446,8 +459,8 @@ const CONSTITUENTS = {
 // ---- State ----
 let currentCountry = "india";
 let currentAsset = "gold";
-let isCryptoMode = false;       // true when Bitcoin/Ethereum is selected
-let currentCrypto = null;       // "bitcoin" or "ethereum"
+let isCryptoMode = false;
+let currentCrypto = null;
 
 // ---- Initialize ----
 document.addEventListener("DOMContentLoaded", () => {
@@ -474,14 +487,12 @@ function setupCountryButtons() {
             // Show asset nav
             document.querySelector(".asset-nav").classList.remove("hidden");
 
-            if (country === currentCountry && !isCryptoMode) return;
+            if (country === currentCountry) return;
 
             document.querySelectorAll(".country-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
 
             currentCountry = country;
-
-            // Update button labels for new country
             updateAssetLabels();
             updateSectorAvailability();
 
@@ -505,16 +516,13 @@ function setupCryptoButtons() {
         btn.addEventListener("click", () => {
             const crypto = btn.dataset.crypto;
 
-            // Enter crypto mode
             isCryptoMode = true;
             currentCrypto = crypto;
 
-            // Deactivate country and asset buttons
             document.querySelectorAll(".country-btn").forEach(b => b.classList.remove("active"));
             document.querySelectorAll(".crypto-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
 
-            // Hide asset nav (not relevant for crypto)
             document.querySelector(".asset-nav").classList.add("hidden");
 
             updateUI();
@@ -530,8 +538,6 @@ function setupAssetButtons() {
         btn.addEventListener("click", () => {
             const asset = btn.dataset.asset;
             if (asset === currentAsset) return;
-
-            // Check if this asset is available
             if (!MARKET_DATA[currentCountry][asset]) return;
 
             document.querySelectorAll(".asset-btn").forEach(b => b.classList.remove("active"));
@@ -548,13 +554,11 @@ function setupAssetButtons() {
 // ---- Dynamic Button Labels ----
 function updateAssetLabels() {
     const country = MARKET_DATA[currentCountry];
-
     ["largecap", "midcap", "smallcap"].forEach(asset => {
         const btn = document.getElementById(`btn-${asset}`);
         if (btn && country[asset] && country[asset].btnLabel) {
             btn.textContent = country[asset].btnLabel;
         } else if (btn) {
-            // Fallback generic labels
             const fallback = { largecap: "Large Cap", midcap: "Mid Cap", smallcap: "Small Cap" };
             btn.textContent = fallback[asset];
         }
@@ -574,10 +578,10 @@ function updateSectorAvailability() {
             btn.style.display = "";
             btn.disabled = false;
             btn.style.opacity = "1";
+            btn.title = "";
         } else {
             btn.style.display = "none";
             btn.disabled = true;
-            // If this was the active asset, switch to gold
             if (currentAsset === asset) {
                 currentAsset = "gold";
                 document.querySelectorAll(".asset-btn").forEach(b => b.classList.remove("active"));
@@ -602,6 +606,8 @@ function updateUI() {
 }
 
 // ---- Load Main Chart ----
+// Uses the TradingView Advanced Chart widget via an iframe embed approach.
+// This is more reliable than the old tv.js constructor for symbol compatibility.
 function loadMainChart() {
     const container = document.getElementById("tradingview-chart");
     let symbol, tz;
@@ -610,45 +616,90 @@ function loadMainChart() {
         symbol = CRYPTO_DATA[currentCrypto].symbol;
         tz = "Etc/UTC";
     } else {
-        symbol = MARKET_DATA[currentCountry][currentAsset].symbol;
+        const data = MARKET_DATA[currentCountry][currentAsset];
+        if (!data) {
+            container.innerHTML = renderErrorMessage("No data available", "This index is not available for the selected country. Please choose a different asset or country.");
+            return;
+        }
+        symbol = data.symbol;
         tz = MARKET_DATA[currentCountry].timezone;
     }
 
     container.innerHTML = "";
 
-    const widgetDiv = document.createElement("div");
-    widgetDiv.id = "tv_main_chart";
-    widgetDiv.style.width = "100%";
-    widgetDiv.style.height = "100%";
-    container.appendChild(widgetDiv);
+    // Build the TradingView Advanced Chart Widget using their embed script
+    // This method is more reliable for symbol support than the old tv.js constructor
+    const widgetContainer = document.createElement("div");
+    widgetContainer.className = "tradingview-widget-container";
+    widgetContainer.style.height = "100%";
+    widgetContainer.style.width = "100%";
 
-    try {
-        new TradingView.widget({
-            container_id: "tv_main_chart",
-            autosize: true,
-            symbol: symbol,
-            interval: "D",
-            timezone: tz,
-            theme: "dark",
-            style: "1",
-            locale: "en",
-            toolbar_bg: "#1a2332",
-            enable_publishing: false,
-            allow_symbol_change: false,
-            hide_top_toolbar: false,
-            hide_side_toolbar: false,
-            withdateranges: true,
-            save_image: true,
-            studies: ["MASimple@tv-basicstudies"],
-            show_popup_button: true,
-            popup_width: "1000",
-            popup_height: "650",
-            backgroundColor: "#1a2332",
-            gridColor: "#1e2d3d",
-        });
-    } catch (e) {
-        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:14px;">Chart loading... If it doesn\'t appear, please refresh the page.</div>';
-    }
+    const widgetInner = document.createElement("div");
+    widgetInner.className = "tradingview-widget-container__widget";
+    widgetInner.style.height = "calc(100% - 32px)";
+    widgetInner.style.width = "100%";
+    widgetContainer.appendChild(widgetInner);
+
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.async = true;
+    script.textContent = JSON.stringify({
+        autosize: true,
+        symbol: symbol,
+        interval: "D",
+        timezone: tz,
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        backgroundColor: "rgba(26, 35, 50, 1)",
+        gridColor: "rgba(30, 45, 61, 1)",
+        allow_symbol_change: false,
+        calendar: false,
+        hide_volume: false,
+        support_host: "https://www.tradingview.com"
+    });
+
+    // Error handling: if the script fails to load
+    script.onerror = function() {
+        container.innerHTML = renderErrorMessage(
+            "Chart failed to load",
+            "Could not connect to TradingView. Please check your internet connection and try refreshing the page."
+        );
+    };
+
+    widgetContainer.appendChild(script);
+    container.appendChild(widgetContainer);
+
+    // Set a timeout to check if chart loaded (the iframe should appear within 10 seconds)
+    setTimeout(() => {
+        const iframe = container.querySelector("iframe");
+        if (!iframe) {
+            // Only show error if the container still has no iframe and hasn't been replaced
+            const currentContainer = document.getElementById("tradingview-chart");
+            if (currentContainer && !currentContainer.querySelector("iframe")) {
+                currentContainer.innerHTML = renderErrorMessage(
+                    "Chart unavailable",
+                    `The symbol "${symbol}" may not be available for embedding. Try selecting a different asset or country.`
+                );
+            }
+        }
+    }, 12000);
+}
+
+// ---- Error Message UI ----
+function renderErrorMessage(title, message) {
+    return `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#94a3b8;text-align:center;padding:40px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div style="font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:8px;">${title}</div>
+            <div style="font-size:13px;color:#64748b;max-width:400px;line-height:1.5;">${message}</div>
+        </div>
+    `;
 }
 
 // ---- Render Constituent Companies ----
@@ -679,7 +730,6 @@ function renderConstituents() {
     const assetData = MARKET_DATA[currentCountry][currentAsset];
     const countryName = MARKET_DATA[currentCountry].name;
 
-    // Friendly asset label
     const assetLabels = {
         largecap: "Large Cap", midcap: "Mid Cap", smallcap: "Small Cap",
         ai: "Artificial Intelligence", semiconductors: "Semiconductors",
@@ -687,7 +737,7 @@ function renderConstituents() {
     };
 
     title.textContent = `${assetLabels[currentAsset] || currentAsset} — Constituent Companies`;
-    subtitle.textContent = `${assetData.name} • ${countryName} • ${companies.length} companies listed`;
+    subtitle.textContent = `${assetData ? assetData.name : currentAsset} • ${countryName} • ${companies.length} companies listed`;
 
     grid.innerHTML = "";
 
